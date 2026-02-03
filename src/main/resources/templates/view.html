@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Danh sách nhân viên</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        h1 { text-align: center; color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #4CAF50; color: white; }
+        tr:hover { background-color: #f5f5f5; }
+        .staff-img { width: 60px; height: 60px; object-fit: cover; border-radius: 50%; }
+        .btn-add { display: inline-block; padding: 10px 20px; background-color: #008CBA; color: white; text-decoration: none; border-radius: 4px; }
+
+        /* CSS CHO POPUP (MODAL) */
+        .modal {
+            display: none; /* Mặc định ẩn */
+            position: fixed;
+            z-index: 1;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.5); /* Màu nền tối mờ */
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto; /* Cách trên 10%, căn giữa */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 40%; /* Chiều rộng popup */
+            border-radius: 8px;
+            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+        }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close:hover { color: black; }
+
+        /* Style cho form trong popup */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold;}
+        .form-group input { width: 100%; padding: 8px; box-sizing: border-box; }
+        .btn-save { background-color: #4CAF50; color: white; padding: 10px 20px; border: none; cursor: pointer; width: 100%; }
+    </style>
+</head>
+<body>
+
+<h1>QUẢN LÝ NHÂN VIÊN</h1>
+
+<a th:href="@{/staff/application}" class="btn-add">+ Thêm nhân viên mới</a>
+
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Ảnh</th>
+        <th>Tên nhân viên</th>
+        <th>Email</th>
+        <th>Chức vụ</th>
+        <th>Hành động</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="staff : ${listStaffs}">
+        <td th:text="${staff.id}"></td>
+        <td>
+            <img th:if="${staff.picture != null}" th:src="@{'/uploads/' + ${staff.picture}}" class="staff-img"/>
+            <span th:if="${staff.picture == null}">No Image</span>
+        </td>
+        <td th:text="${staff.name}"></td>
+        <td th:text="${staff.email}"></td>
+        <td th:text="${staff.position}"></td>
+        <td>
+            <a href="#"
+               th:data-id="${staff.id}"
+               th:data-name="${staff.name}"
+               th:data-email="${staff.email}"
+               th:data-position="${staff.position}"
+               onclick="openModal(this)">Sửa</a>
+            |
+            <a th:href="@{/delete/{id}(id=${staff.id})}"
+               onclick="return confirm('Bạn có chắc muốn xóa không?');" style="color: red;">Xóa</a>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2>Cập nhật thông tin</h2>
+
+        <form th:action="@{/update}" method="post">
+            <input type="hidden" id="modal-id" name="id">
+
+            <div class="form-group">
+                <label>Tên nhân viên:</label>
+                <input type="text" id="modal-name" name="name" required>
+            </div>
+
+            <div class="form-group">
+                <label>Email:</label>
+                <input type="email" id="modal-email" name="email">
+            </div>
+
+            <div class="form-group">
+                <label>Chức vụ:</label>
+                <input type="text" id="modal-position" name="position">
+            </div>
+
+            <button type="submit" class="btn-save">Lưu thay đổi</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Hàm mở Modal và điền dữ liệu cũ vào
+    function openModal(element) {
+        // Lấy dữ liệu từ các thuộc tính data- của nút Sửa
+        var id = element.getAttribute("data-id");
+        var name = element.getAttribute("data-name");
+        var email = element.getAttribute("data-email");
+        var position = element.getAttribute("data-position");
+
+        // Điền dữ liệu vào các ô input trong Modal
+        document.getElementById("modal-id").value = id;
+        document.getElementById("modal-name").value = name;
+        document.getElementById("modal-email").value = email;
+        document.getElementById("modal-position").value = position;
+
+        // Hiển thị Modal
+        document.getElementById("editModal").style.display = "block";
+    }
+
+    // Hàm đóng Modal
+    function closeModal() {
+        document.getElementById("editModal").style.display = "none";
+    }
+
+    // Khi click ra ngoài vùng popup thì cũng đóng lại
+    window.onclick = function(event) {
+        if (event.target == document.getElementById("editModal")) {
+            closeModal();
+        }
+    }
+</script>
+
+</body>
+</html>
